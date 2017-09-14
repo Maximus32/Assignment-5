@@ -1,5 +1,7 @@
 angular.module('listings').controller('ListingsController', ['$scope', '$location', '$stateParams', '$state', 'Listings', 
   function($scope, $location, $stateParams, $state, Listings){
+    
+    // LISTING READ
     $scope.find = function() {
       /* set loader*/
       $scope.loading = true;
@@ -13,7 +15,8 @@ angular.module('listings').controller('ListingsController', ['$scope', '$locatio
         $scope.error = 'Unable to retrieve listings!\n' + error;
       });
     };
-
+    
+    // LISTING READ ONE
     $scope.findOne = function() {
       debugger;
       $scope.loading = true;
@@ -42,7 +45,8 @@ angular.module('listings').controller('ListingsController', ['$scope', '$locatio
                 $scope.loading = false;
               });
     };  
-
+    
+    // LISTING CREATION
     $scope.create = function(isValid) {
       $scope.error = null;
 
@@ -72,20 +76,44 @@ angular.module('listings').controller('ListingsController', ['$scope', '$locatio
                 $scope.error = 'Unable to save listing!\n' + error;
               });
     };
-
+    
+    // LISTING UPDATE
     $scope.update = function(isValid) {
-      /*
-        Fill in this function that should update a listing if the form is valid. Once the update has 
-        successfully finished, navigate back to the 'listing.list' state using $state.go(). If an error 
-        occurs, pass it to $scope.error. 
-       */
-    };
+      $scope.error = null;
 
+      // Check for validity of the form
+      if (!isValid) {
+        $scope.$broadcast('show-errors-check-validity', 'articleForm') ;
+        
+        return false ;
+      }
+      
+      // Find the listing-to-update and assign updated values to parameters
+      Listings.findById($stateParams.listingId, function(err, listing) {
+        if (err) $scope.error = 'Unable to find listing!\n' + error ;
+        else {
+          listing.name: $scope.name
+          listing.code: $scope.code
+          listing.address: $scope.address
+          
+          // Save updated listing
+          listing.save(function(err) {
+            if (err) $scope.error = 'Unable to save listing!\n' + error ;
+            else $state.go('listings.list', { successMessage: 'Listing succesfully updated!' }) ;
+        })
+      }) ;
+    };
+    
+    // LISTING REMOVAL
     $scope.remove = function() {
-      /*
-        Implement the remove function. If the removal is successful, navigate back to 'listing.list'. Otherwise, 
-        display the error. 
-       */
+      Listings.findById($stateParams.listingId, function(err, listing) {
+        if (err) $scope.error = 'Unable to find listing!\n' + error ;
+        else {
+          listing.delete(function(err) {
+            if (err) $scope.error = 'Unable to delete listing!\n' + error ;
+            else $state.go('listings.list', { successMessage: 'Listing succesfully deleted!' }) ;
+        })
+      }) ;
     };
 
     /* Bind the success message to the scope if it exists as part of the current state */
