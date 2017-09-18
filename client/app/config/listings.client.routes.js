@@ -25,9 +25,9 @@ angular.module('listings').config(['$stateProvider', '$urlRouterProvider',
       .state('listings.edit', {
         url: '/:listingId',
         templateUrl: 'app/views/edit-listing.client.view.html'
-      }),
+      })
       .state('listings.map', {
-        url: '/:listingId',
+        url: '',
         templateUrl: 'app/views/map-listings.client.view.html'
       })
   } 

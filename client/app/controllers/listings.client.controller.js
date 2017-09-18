@@ -35,7 +35,7 @@ angular.module('listings').controller('ListingsController', ['$scope', '$locatio
        */
 
       var id = $stateParams.listingId;
-
+      
       Listings.read(id)
               .then(function(response) {
                 $scope.listing = response.data;
@@ -46,7 +46,7 @@ angular.module('listings').controller('ListingsController', ['$scope', '$locatio
               });
     };  
     
-    // LISTING CREATION
+    // LISTING CREATE
     $scope.create = function(isValid) {
       $scope.error = null;
 
@@ -80,41 +80,39 @@ angular.module('listings').controller('ListingsController', ['$scope', '$locatio
     // LISTING UPDATE
     $scope.update = function(isValid) {
       $scope.error = null;
-
+      
       // Check for validity of the form
       if (!isValid) {
         $scope.$broadcast('show-errors-check-validity', 'articleForm') ;
         
         return false ;
       }
+
+      // Extract the listing object from the raw form
+      var listing = {
+        name: $scope.name, 
+        code: $scope.code, 
+        address: $scope.address
+      };
       
-      // Find the listing-to-update and assign updated values to parameters
-      Listings.findById($stateParams.listingId, function(err, listing) {
-        if (err) $scope.error = 'Unable to find listing!\n' + error ;
-        else {
-          listing.name: $scope.name
-          listing.code: $scope.code
-          listing.address: $scope.address
-          
-          // Save updated listing
-          listing.save(function(err) {
-            if (err) $scope.error = 'Unable to save listing!\n' + error ;
-            else $state.go('listings.list', { successMessage: 'Listing succesfully updated!' }) ;
-        })
+      // Pass the currently selected listing ID and new listing to the 'update'...?
+      Listings.update($stateParams.listingId, listing).then(function(response) {
+        $state.go('listings.list', { successMessage: 'Listing succesfully updated!' }) ;
+      }, function(error) {
+        $scope.error = 'Unable to update listing!\n' + error ;
       }) ;
     };
     
     // LISTING REMOVAL
     $scope.remove = function() {
-      Listings.findById($stateParams.listingId, function(err, listing) {
-        if (err) $scope.error = 'Unable to find listing!\n' + error ;
-        else {
-          listing.delete(function(err) {
-            if (err) $scope.error = 'Unable to delete listing!\n' + error ;
-            else $state.go('listings.list', { successMessage: 'Listing succesfully deleted!' }) ;
-        })
+      $scope.error = null;
+      
+      Listings.delete($stateParams.listingId).then(function(response) {
+        $state.go('listings.list', { successMessage: 'Listing succesfully deleted!' }) ;
+      }, function(error) {
+        $scope.error = 'Unable to delete listing!\n' + error ;
       }) ;
-    };
+    } ;
 
     /* Bind the success message to the scope if it exists as part of the current state */
     if($stateParams.successMessage) {
@@ -129,5 +127,10 @@ angular.module('listings').controller('ListingsController', ['$scope', '$locatio
       }, 
       zoom: 14
     }
+    
+    // Behavior for marker clicking on the map
+    $scope.clickMarker = function(marker, eventName, model) {
+      model.show = !model.show ;
+    } ;
   }
 ]);
